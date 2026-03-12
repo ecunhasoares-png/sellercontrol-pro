@@ -1,35 +1,30 @@
-import { NextResponse } from "next/server"
-import Stripe from "stripe"
-import { createClient } from "@supabase/supabase-js"
+import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+export async function POST(req) {
 
-export async function POST(req: Request) {
+  const { plan } = await req.json()
 
-  const { priceId, userId } = await req.json()
+  const priceMap = {
+    basic: 'price_basic_id',
+    pro: 'price_pro_id',
+    premium: 'price_premium_id'
+  }
 
   const session = await stripe.checkout.sessions.create({
-
-    mode: "subscription",
-
-    client_reference_id: userId,
-
+    payment_method_types: ['card'],
     line_items: [
       {
-        price: priceId,
+        price: priceMap[plan],
         quantity: 1
       }
     ],
-
-    success_url: "http://localhost:3000/dashboard",
-    cancel_url: "http://localhost:3000/pricing"
-
+    mode: 'subscription',
+    success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
+    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/`
   })
 
-  return NextResponse.json({ url: session.url })
+  return Response.json({ url: session.url })
+
 }
