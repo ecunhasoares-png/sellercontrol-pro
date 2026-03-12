@@ -12,7 +12,7 @@ export default function CalculatorPage() {
 
   function handleCalculate() {
 
-    const result = calculateProfit(price, cost, marketplace)
+    const result = calculateProfit(marketplace, price, cost, 0)
 
     setProfit(result.profit)
   }
@@ -60,9 +60,7 @@ export default function CalculatorPage() {
         </button>
 
         <div className="text-xl font-bold">
-
           Lucro: R$ {profit}
-
         </div>
 
       </div>
