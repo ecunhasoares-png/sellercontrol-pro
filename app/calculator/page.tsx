@@ -16,7 +16,7 @@ export default function CalculatorPage() {
 
     setProfit(result.profit)
   }
-
+                                                   
   return (
 
     <div className="p-10">
