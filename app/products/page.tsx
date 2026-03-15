@@ -5,18 +5,13 @@ import { supabase } from '@/lib/supabase'
 
 export default function ProductsPage(){
 
-const [name,setName] = useState('')
-const [sku,setSku] = useState('')
-const [stock,setStock] = useState(0)
-const [cost,setCost] = useState(0)
-const [price,setPrice] = useState(0)
-
 const [products,setProducts] = useState<any[]>([])
+const [name,setName] = useState('')
+const [cost,setCost] = useState(0)
+const [stock,setStock] = useState(0)
 
 useEffect(()=>{
-
 loadProducts()
-
 },[])
 
 async function loadProducts(){
@@ -26,106 +21,104 @@ const { data } = await supabase
 .select('*')
 
 if(data){
-
 setProducts(data)
-
 }
 
 }
 
-async function addProduct(){
+async function saveProduct(e:any){
+
+e.preventDefault()
 
 const { data:userData } = await supabase.auth.getUser()
 
-await supabase
+const { error } = await supabase
 .from('products')
 .insert([
 {
 name,
-sku,
-stock,
 cost,
-price,
+stock,
 user_id:userData.user?.id
 }
 ])
 
+if(error){
+alert(error.message)
+}else{
+alert('Produto cadastrado')
 setName('')
-setSku('')
-setStock(0)
 setCost(0)
-setPrice(0)
-
+setStock(0)
 loadProducts()
+}
 
 }
 
 return(
 
-<div style={{padding:40}}>
+<div className="p-10">
 
-<h1>Produtos</h1>
+<h1 className="text-3xl font-bold mb-6">
+Produtos
+</h1>
+
+<form
+onSubmit={saveProduct}
+className="grid gap-4 max-w-md mb-10"
+>
 
 <input
 placeholder="Nome do produto"
+className="border p-2"
 value={name}
 onChange={(e)=>setName(e.target.value)}
 />
 
-<br/>
-
-<input
-placeholder="SKU"
-value={sku}
-onChange={(e)=>setSku(e.target.value)}
-/>
-
-<br/>
-
-<input
-type="number"
-placeholder="Estoque"
-value={stock}
-onChange={(e)=>setStock(Number(e.target.value))}
-/>
-
-<br/>
-
 <input
 type="number"
 placeholder="Custo"
+className="border p-2"
 value={cost}
 onChange={(e)=>setCost(Number(e.target.value))}
 />
 
-<br/>
-
 <input
 type="number"
-placeholder="Preço"
-value={price}
-onChange={(e)=>setPrice(Number(e.target.value))}
+placeholder="Estoque"
+className="border p-2"
+value={stock}
+onChange={(e)=>setStock(Number(e.target.value))}
 />
 
-<br/>
-
-<button onClick={addProduct}>
-Salvar produto
+<button className="bg-blue-600 text-white p-2 rounded">
+Cadastrar produto
 </button>
 
-<h2>Lista de produtos</h2>
+</form>
+
+<h2 className="text-xl font-bold mb-4">
+Lista de produtos
+</h2>
+
+<div className="grid gap-2">
 
 {products.map((p)=>(
-<div key={p.id}>
+<div
+key={p.id}
+className="border p-3 rounded flex justify-between"
+>
 
-<p>{p.name}</p>
-<p>SKU: {p.sku}</p>
-<p>Estoque: {p.stock}</p>
+<span>{p.name}</span>
 
-<hr/>
+<span>
+Estoque: {p.stock}
+</span>
 
 </div>
 ))}
+
+</div>
 
 </div>
 
