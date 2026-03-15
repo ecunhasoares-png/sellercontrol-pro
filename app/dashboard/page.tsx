@@ -44,7 +44,7 @@ let profitValue = 0
 
 data.forEach((s:any)=>{
 
-totalValue += Number(s.price)
+totalValue += Number(s.sale_price)
 profitValue += Number(s.profit)
 
 })
@@ -79,7 +79,7 @@ return(
 
 <Tooltip/>
 
-<Bar dataKey="price"/>
+<Bar dataKey="sale_price"/>
 
 </BarChart>
 
@@ -95,7 +95,7 @@ return(
 
 <LineChart data={sales}>
 
-<XAxis dataKey="product"/>
+<XAxis dataKey="product_name"/>
 
 <YAxis/>
 

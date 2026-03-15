@@ -20,10 +20,8 @@ const [store,setStore] = useState('')
 const [profitPreview,setProfitPreview] = useState(0)
 
 useEffect(()=>{
-
 loadProducts()
 loadStores()
-
 },[])
 
 useEffect(()=>{
@@ -74,9 +72,7 @@ setProductId(id)
 const selected = products.find((p)=>p.id === id)
 
 if(selected){
-
 setCost(Number(selected.cost))
-
 }
 
 }
@@ -230,10 +226,8 @@ onChange={(e)=>setShipping(Number(e.target.value))}
 />
 
 <div className="bg-gray-100 p-3 rounded">
-
-Lucro estimado:  
+Lucro estimado:
 <strong> R$ {profitPreview.toFixed(2)}</strong>
-
 </div>
 
 <button
