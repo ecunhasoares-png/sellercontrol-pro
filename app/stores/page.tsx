@@ -5,9 +5,9 @@ import { supabase } from '@/lib/supabase'
 
 export default function StoresPage(){
 
-const [name,setName] = useState('')
-const [marketplace,setMarketplace] = useState('')
 const [stores,setStores] = useState<any[]>([])
+const [name,setName] = useState('')
+const [marketplace,setMarketplace] = useState('Shopee')
 
 useEffect(()=>{
 loadStores()
@@ -19,15 +19,19 @@ const { data } = await supabase
 .from('stores')
 .select('*')
 
-if(data) setStores(data)
+if(data){
+setStores(data)
+}
 
 }
 
-async function addStore(){
+async function saveStore(e:any){
+
+e.preventDefault()
 
 const { data:userData } = await supabase.auth.getUser()
 
-await supabase
+const { error } = await supabase
 .from('stores')
 .insert([
 {
@@ -37,57 +41,74 @@ user_id:userData.user?.id
 }
 ])
 
+if(error){
+alert(error.message)
+}else{
+alert('Loja cadastrada')
 setName('')
-setMarketplace('')
-
 loadStores()
+}
 
 }
 
 return(
 
-<div style={{padding:40}}>
+<div className="p-10">
 
-<h1>Minhas Lojas</h1>
+<h1 className="text-3xl font-bold mb-6">
+Lojas
+</h1>
+
+<form
+onSubmit={saveStore}
+className="grid gap-4 max-w-md mb-10"
+>
 
 <input
 placeholder="Nome da loja"
+className="border p-2"
 value={name}
 onChange={(e)=>setName(e.target.value)}
 />
 
-<br/>
-
 <select
+className="border p-2"
 value={marketplace}
 onChange={(e)=>setMarketplace(e.target.value)}
 >
 
-<option value="">Marketplace</option>
 <option>Shopee</option>
-<option>Mercado Livre</option>
+<option>MercadoLivre</option>
 <option>Amazon</option>
 
 </select>
 
-<br/>
-
-<button onClick={addStore}>
+<button className="bg-blue-600 text-white p-2 rounded">
 Cadastrar loja
 </button>
 
-<h2>Lojas cadastradas</h2>
+</form>
+
+<h2 className="text-xl font-bold mb-4">
+Lista de lojas
+</h2>
+
+<div className="grid gap-2">
 
 {stores.map((s)=>(
-<div key={s.id}>
+<div
+key={s.id}
+className="border p-3 rounded flex justify-between"
+>
 
-<p>{s.name}</p>
-<p>{s.marketplace}</p>
+<span>{s.name}</span>
 
-<hr/>
+<span>{s.marketplace}</span>
 
 </div>
 ))}
+
+</div>
 
 </div>
 
