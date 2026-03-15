@@ -51,9 +51,11 @@ export default function LoginPage() {
         onChange={(e)=>setPassword(e.target.value)}
         />
 
-        <button className="bg-blue-600 text-white p-2 w-full rounded">
-        Entrar
-        </button>
+        <button
+type="submit"
+className="bg-blue-600 text-white p-2 w-full rounded">
+Entrar
+</button>
 
       </form>
 
