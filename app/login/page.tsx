@@ -15,16 +15,21 @@ export default function LoginPage() {
 
     e.preventDefault()
 
-    const { error } = await supabase.auth.signInWithPassword({
+    console.log("clicou no login")
+
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     })
 
     if(error){
       alert(error.message)
-    }else{
+      return
+    }
+
+    if(data.user){
+      console.log("login realizado")
       router.push('/dashboard')
-      router.refresh()
     }
 
   }
@@ -52,10 +57,11 @@ export default function LoginPage() {
         />
 
         <button
-type="submit"
-className="bg-blue-600 text-white p-2 w-full rounded">
-Entrar
-</button>
+        type="submit"
+        className="bg-blue-600 text-white p-2 w-full rounded"
+        >
+        Entrar
+        </button>
 
       </form>
 
