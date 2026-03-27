@@ -1,50 +1,64 @@
-import { headers } from "next/headers"
-import Stripe from "stripe"
-import { supabase } from "@/lib/supabase"
+import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-
-export async function POST(req: Request) {
-
-const body = await req.text()
-
-const headersList = await headers()
-const sig = headersList.get("stripe-signature")
-
-let event
-
-try {
-
-event = stripe.webhooks.constructEvent(
-body,
-sig!,
-process.env.STRIPE_WEBHOOK_SECRET!
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-} catch (err) {
+export async function POST(req: Request) {
+  try {
+    const body = await req.json()
 
-return new Response("Webhook Error", { status: 400 })
+    // só processa eventos de pagamento
+    if (body.type !== 'payment') {
+      return NextResponse.json({ ignored: true })
+    }
 
-}
+    const paymentId = body.data.id
 
-if(event.type === "checkout.session.completed"){
+    // buscar pagamento no Mercado Pago
+    const response = await fetch(
+      `https://api.mercadopago.com/v1/payments/${paymentId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.MERCADO_PAGO_ACCESS_TOKEN}`
+        }
+      }
+    )
 
-const session:any = event.data.object
+    const payment = await response.json()
 
-await supabase
-.from("subscriptions")
-.insert([
-{
-user_id: session.client_reference_id,
-plan: "pro",
-status: "active",
-stripe_customer_id: session.customer,
-stripe_subscription_id: session.subscription
-}
-])
+    // valida pagamento aprovado
+    if (payment.status !== 'approved') {
+      return NextResponse.json({ status: 'not approved' })
+    }
 
-}
+    // pegar user_id enviado no pagamento
+    const userId = payment.metadata?.user_id
 
-return new Response("ok")
+    if (!userId) {
+      console.log('❌ user_id não encontrado no metadata')
+      return NextResponse.json({ error: 'sem user_id' })
+    }
 
+    // 🔥 liberar PRO
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_pro: true })
+      .eq('id', userId)
+
+    if (error) {
+      console.log('❌ erro ao atualizar:', error.message)
+      return NextResponse.json({ error: 'erro banco' })
+    }
+
+    console.log('✅ usuário virou PRO:', userId)
+
+    return NextResponse.json({ success: true })
+
+  } catch (err) {
+    console.log('🔥 erro webhook:', err)
+    return NextResponse.json({ error: 'erro interno' }, { status: 500 })
+  }
 }

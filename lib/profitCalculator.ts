@@ -1,28 +1,23 @@
 export function calculateProfit(
-  marketplace: string,
-  price: number,
-  cost: number,
-  shipping: number
-) {
+marketplace:string,
+price:number,
+cost:number,
+shipping:number
+){
 
-  let fee = 0
+let fee = 0
 
-  if (marketplace === 'Shopee') {
-    fee = price * 0.14
-  }
+if(marketplace === 'Shopee') fee = price * 0.14
+if(marketplace === 'MercadoLivre') fee = price * 0.16
+if(marketplace === 'Amazon') fee = price * 0.18
 
-  if (marketplace === 'MercadoLivre') {
-    fee = price * 0.16
-  }
+const profit = price - cost - shipping - fee
 
-  if (marketplace === 'Amazon') {
-    fee = price * 0.15
-  }
+const margin = price > 0 ? (profit / price) * 100 : 0
 
-  const profit = price - cost - shipping - fee
+return {
+profit,
+margin
+}
 
-  return {
-    fee,
-    profit
-  }
 }

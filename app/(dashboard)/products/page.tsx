@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect,useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 
 export default function ProductsPage(){
@@ -26,32 +26,21 @@ setProducts(data)
 
 }
 
-async function saveProduct(e:any){
+async function createProduct(){
 
-e.preventDefault()
-
-const { data:userData } = await supabase.auth.getUser()
-
-const { error } = await supabase
+await supabase
 .from('products')
-.insert([
-{
+.insert({
 name,
 cost,
-stock,
-user_id:userData.user?.id
-}
-])
+stock
+})
 
-if(error){
-alert(error.message)
-}else{
-alert('Produto cadastrado')
 setName('')
 setCost(0)
 setStock(0)
+
 loadProducts()
-}
 
 }
 
@@ -63,10 +52,7 @@ return(
 Produtos
 </h1>
 
-<form
-onSubmit={saveProduct}
-className="grid gap-4 max-w-md mb-10"
->
+<div className="grid gap-3 max-w-md mb-8">
 
 <input
 placeholder="Nome do produto"
@@ -91,11 +77,14 @@ value={stock}
 onChange={(e)=>setStock(Number(e.target.value))}
 />
 
-<button className="bg-blue-600 text-white p-2 rounded">
+<button
+onClick={createProduct}
+className="bg-blue-600 text-white p-2 rounded"
+>
 Cadastrar produto
 </button>
 
-</form>
+</div>
 
 <h2 className="text-xl font-bold mb-4">
 Lista de produtos
@@ -111,9 +100,7 @@ className="border p-3 rounded flex justify-between"
 
 <span>{p.name}</span>
 
-<span>
-Estoque: {p.stock}
-</span>
+<span>Estoque: {p.stock}</span>
 
 </div>
 ))}

@@ -5,67 +5,47 @@ import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
-
   const router = useRouter()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
 
-  const [email,setEmail] = useState('')
-  const [password,setPassword] = useState('')
-
-  async function handleLogin(e:any){
-
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
 
-    console.log("clicou no login")
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
-
-    if(error){
-      alert(error.message)
-      return
+    if (error) {
+      setError(error.message)
+    } else {
+      router.push('/dashboard') // Redireciona para dashboard após login
     }
-
-    if(data.user){
-      console.log("login realizado")
-      router.push('/dashboard')
-    }
-
   }
 
-  return(
-
-    <div className="flex items-center justify-center h-screen">
-
-      <form onSubmit={handleLogin} className="bg-white p-8 rounded shadow w-80">
-
-        <h1 className="text-2xl font-bold mb-6">Login</h1>
-
+  return (
+    <div className="h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
+      <h1 className="text-3xl font-bold mb-4">Login</h1>
+      {error && <p className="text-red-500 mb-2">{error}</p>}
+      <form onSubmit={handleLogin} className="flex flex-col gap-4 w-full max-w-sm">
         <input
-        type="email"
-        placeholder="Email"
-        className="border p-2 w-full mb-4"
-        onChange={(e)=>setEmail(e.target.value)}
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="p-2 border rounded"
+          required
         />
-
         <input
-        type="password"
-        placeholder="Senha"
-        className="border p-2 w-full mb-4"
-        onChange={(e)=>setPassword(e.target.value)}
+          type="password"
+          placeholder="Senha"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="p-2 border rounded"
+          required
         />
-
-        <button
-        type="submit"
-        className="bg-blue-600 text-white p-2 w-full rounded"
-        >
-        Entrar
+        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
+          Entrar
         </button>
-
       </form>
-
     </div>
-
   )
 }

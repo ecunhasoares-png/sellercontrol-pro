@@ -1,28 +1,40 @@
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse } from 'next/server'
 
-export function proxy(request: NextRequest) {
+export async function proxy(req: any) {
 
-const token = request.cookies.get("sb-access-token")
+  const res = NextResponse.next()
 
-const protectedRoutes = [
-"/dashboard",
-"/products",
-"/sales",
-"/stores",
-"/inventory"
-]
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return req.cookies.get(name)?.value
+        },
+        set(name: string, value: string, options: any) {
+          res.cookies.set(name, value, options)
+        },
+        remove(name: string, options: any) {
+          res.cookies.set(name, '', options)
+        }
+      }
+    }
+  )
 
-const isProtected = protectedRoutes.some((route)=>
-request.nextUrl.pathname.startsWith(route)
-)
+  const {
+    data: { session }
+  } = await supabase.auth.getSession()
 
-if(isProtected && !token){
+  // protege dashboard
+  if (!session && req.nextUrl.pathname.startsWith('/dashboard')) {
+    return NextResponse.redirect(new URL('/login', req.url))
+  }
 
-return NextResponse.redirect(new URL("/login", request.url))
-
+  return res
 }
 
-return NextResponse.next()
-
-}                                                                           
+export const config = {
+  matcher: ['/dashboard/:path*']
+}

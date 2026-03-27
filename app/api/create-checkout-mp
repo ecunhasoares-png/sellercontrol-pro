@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 
-export async function POST(){
+export async function POST(req: Request){
+
+const { userId } = await req.json()
 
 const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN
 
@@ -18,6 +20,9 @@ quantity: 1,
 unit_price: 29.90
 }
 ],
+metadata: {
+user_id: userId
+},
 back_urls: {
 success: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
 failure: `${process.env.NEXT_PUBLIC_SITE_URL}`,
