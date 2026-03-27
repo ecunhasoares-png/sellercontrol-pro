@@ -1,41 +1,24 @@
+'use client'
+
+import ProtectedRoute from '@/components/ProtectedRoute'
+import Sidebar from '@/components/Sidebar'
+
 export default function DashboardLayout({
-children,
-}:{
-children: React.ReactNode
-}){
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <ProtectedRoute>
+      <div style={{ display: 'flex' }}>
+        
+        <Sidebar />
 
-return(
+        <main style={{ flex: 1, padding: 30 }}>
+          {children}
+        </main>
 
-<div style={{display:'flex'}}>
-
-<aside style={{
-width:220,
-background:'#111',
-color:'#fff',
-minHeight:'100vh',
-padding:20
-}}>
-
-<h2>SellerControl</h2>
-
-<nav style={{display:'grid',gap:10,marginTop:20}}>
-
-<a href="/dashboard">Dashboard</a>
-<a href="/sales">Vendas</a>
-<a href="/products">Produtos</a>
-<a href="/stores">Lojas</a>
-<a href="/inventory">Estoque</a>
-
-</nav>
-
-</aside>
-
-<main style={{flex:1,padding:30}}>
-{children}
-</main>
-
-</div>
-
-)
-
+      </div>
+    </ProtectedRoute>
+  )
 }
