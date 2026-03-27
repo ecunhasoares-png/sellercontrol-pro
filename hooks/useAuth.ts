@@ -3,33 +3,32 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
-export function useAuth(){
-
+export function useAuth() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(()=>{
-
-    async function getUser(){
-      const { data } = await supabase.auth.getUser()
-      setUser(data.user)
+  useEffect(() => {
+    // 🔥 pega sessão inicial corretamente
+    async function getSession() {
+      const { data } = await supabase.auth.getSession()
+      setUser(data.session?.user ?? null)
       setLoading(false)
     }
 
-    getUser()
+    getSession()
 
+    // 🔥 escuta mudanças de autenticação (LOGIN / LOGOUT)
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setUser(session?.user ?? null)
+        setLoading(false) // 🔥 CORREÇÃO CRÍTICA
       }
     )
 
     return () => {
       listener.subscription.unsubscribe()
     }
-
-  },[])
+  }, [])
 
   return { user, loading }
-
 }

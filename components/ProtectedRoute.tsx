@@ -4,22 +4,19 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 
-export default function ProtectedRoute({ children }: any){
-
+export default function ProtectedRoute({ children }: any) {
   const { user, loading } = useAuth()
   const router = useRouter()
 
-  useEffect(()=>{
-
-    if(!loading && !user){
-      router.push('/login')
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace('/login')
     }
+  }, [user, loading, router])
 
-  },[user, loading])
+  if (loading) return <p>Carregando...</p>
 
-  if(loading) return <p>Carregando...</p>
-
-  if(!user) return null
+  if (!user) return null
 
   return children
 }
