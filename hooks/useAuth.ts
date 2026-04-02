@@ -6,31 +6,53 @@ import { supabase } from '@/lib/supabase'
 export function useAuth(){
 
   const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
   const [isPro, setIsPro] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+
+    let mounted = true
+
+    async function loadInitialSession(){
+      const { data } = await supabase.auth.getSession()
+
+      if(!mounted) return
+
+      if(data.session?.user){
+        setUser(data.session.user)
+        await loadProfile(data.session.user.id)
+      }
+
+      setLoading(false)
+    }
+
+    async function loadProfile(userId: string){
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_pro')
+        .eq('id', userId)
+        .maybeSingle()
+
+      if(error){
+        console.error('Erro profile:', error.message)
+        return
+      }
+
+      if(data){
+        setIsPro(data.is_pro)
+      }
+    }
+
+    loadInitialSession()
 
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
 
+        if(!mounted) return
+
         if(session?.user){
           setUser(session.user)
-
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('is_pro')
-            .eq('id', session.user.id)
-            .maybeSingle()
-
-          if(error){
-            console.error('Erro ao buscar profile:', error.message)
-          }
-
-          if(data){
-            setIsPro(data.is_pro)
-          }
-
+          await loadProfile(session.user.id)
         } else {
           setUser(null)
           setIsPro(false)
@@ -40,23 +62,12 @@ export function useAuth(){
       }
     )
 
-    supabase.auth.getSession().then(({ data }) => {
-      if(data.session?.user){
-        setUser(data.session.user)
-      }
-      setLoading(false)
-    })
-
     return () => {
+      mounted = false
       listener.subscription.unsubscribe()
     }
 
   }, [])
 
-  return {
-    user,
-    loading,
-    isPro
-  }
-
+  return { user, isPro, loading }
 }
