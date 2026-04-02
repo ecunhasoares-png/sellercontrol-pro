@@ -11,34 +11,6 @@ export function useAuth(){
 
   useEffect(() => {
 
-    async function loadUser(){
-
-      const { data: { session } } = await supabase.auth.getSession()
-
-      if(session?.user){
-        setUser(session.user)
-
-        // 🔥 busca perfil com tratamento de erro
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('is_pro')
-          .eq('id', session.user.id)
-          .maybeSingle()
-
-        if(error){
-          console.error('Erro ao buscar profile:', error.message)
-        }
-
-        if(data){
-          setIsPro(data.is_pro)
-        }
-      }
-
-      setLoading(false)
-    }
-
-    loadUser()
-
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
 
@@ -67,6 +39,13 @@ export function useAuth(){
         setLoading(false)
       }
     )
+
+    supabase.auth.getSession().then(({ data }) => {
+      if(data.session?.user){
+        setUser(data.session.user)
+      }
+      setLoading(false)
+    })
 
     return () => {
       listener.subscription.unsubscribe()
