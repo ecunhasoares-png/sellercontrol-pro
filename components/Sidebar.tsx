@@ -27,7 +27,7 @@ export default function Sidebar() {
         </button>
 
         <button
-          onClick={() => router.push('/sales')}
+          onClick={() => router.push('/dashboard/sales')}
           className="block w-full text-left px-3 py-2 rounded hover:bg-gray-200"
         >
           Vendas
