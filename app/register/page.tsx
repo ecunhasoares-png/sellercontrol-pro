@@ -37,7 +37,12 @@ export default function RegisterPage(){
         .insert({
           id: data.user.id,
           email: data.user.email,
-          is_pro: false
+          is_pro: false,
+
+          // 🔥 TRIAL DE 7 DIAS (CORRETO)
+          trial_ends_at: new Date(
+            Date.now() + 7 * 24 * 60 * 60 * 1000
+          ).toISOString()
         })
 
       if(profileError){
@@ -45,10 +50,8 @@ export default function RegisterPage(){
       }
     }
 
-    // ✅ feedback visual
     setMessage('Conta criada! Verifique seu email...')
 
-    // 🔥 REDIRECIONAMENTO GARANTIDO
     setTimeout(() => {
       router.push('/login')
     }, 1500)

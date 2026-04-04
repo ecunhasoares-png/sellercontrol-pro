@@ -42,9 +42,10 @@ export default function NewSalePage() {
     if (!amount) return alert('Informe o valor da venda')
     if (!selectedProduct) return alert('Selecione um produto')
 
-    // 🔥 UX bloqueio (não segurança)
+    // 🔥 BLOQUEIO CORRETO
     if(!isPro){
-      alert('Plano FREE permite até 10 vendas. Faça upgrade 🚀')
+      router.push('/pricing')
+      return
     }
 
     const saleValue = Number(amount)

@@ -1,112 +1,61 @@
 'use client'
 
+import UpgradeButton from '@/components/UpgradeButton'
+
 export default function PricingPage(){
 
-function handleBuy(plan:string){
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
 
-fetch('/api/checkout', {
-method:'POST',
-headers:{ 'Content-Type':'application/json' },
-body: JSON.stringify({ plan })
-})
-.then(res=>res.json())
-.then(data=>{
-window.location.href = data.url
-})
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl w-full">
 
-}
+        {/* MENSAL */}
+        <div className="bg-white p-6 rounded-xl shadow text-center">
 
-return(
+          <h2 className="text-xl font-bold mb-2">Mensal</h2>
 
-<div className="min-h-screen bg-gray-100 p-10">
+          <p className="text-2xl font-bold mb-4">R$ 29,90</p>
 
-<h1 className="text-4xl font-bold text-center mb-4">
-Transforme suas vendas em lucro real
-</h1>
+          <ul className="text-sm mb-6 space-y-1">
+            <li>✔ Vendas ilimitadas</li>
+            <li>✔ IA financeira</li>
+            <li>✔ Controle total</li>
+          </ul>
 
-<p className="text-center text-gray-600 mb-10">
-Controle completo do seu negócio nos marketplaces
-</p>
+          <UpgradeButton plan="monthly" />
 
-<div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        </div>
 
-{/* FREE */}
-<div className="bg-white p-6 rounded shadow">
+        {/* ANUAL (DESTAQUE FORTE) */}
+        <div className="bg-yellow-100 p-6 rounded-xl shadow text-center border-2 border-yellow-500 scale-105">
 
-<h2 className="text-xl font-bold mb-4">Plano Free</h2>
+          <p className="text-xs font-bold text-yellow-700 mb-1">
+            🔥 MAIS ESCOLHIDO
+          </p>
 
-<p className="text-3xl font-bold mb-4">R$ 0</p>
+          <h2 className="text-xl font-bold mb-2">Anual</h2>
 
-<ul className="mb-6 space-y-2">
-<li>✔ Até 50 vendas</li>
-<li>✔ Controle básico</li>
-<li>❌ Sem gráficos avançados</li>
-<li>❌ Sem relatórios</li>
-</ul>
+          <p className="text-2xl font-bold mb-1">R$ 297</p>
 
-<button
-className="w-full bg-gray-300 p-2 rounded cursor-not-allowed"
->
-Plano atual
-</button>
+          <p className="text-sm text-gray-600 mb-1">
+            Economize R$ 60
+          </p>
 
-</div>
+          <p className="text-sm mb-4">
+            Menos de R$ 1 por dia
+          </p>
 
-{/* PRO */}
-<div className="bg-yellow-400 p-6 rounded shadow transform scale-105">
+          <UpgradeButton plan="annual" />
 
-<h2 className="text-xl font-bold mb-4">Plano PRO 🚀</h2>
+        </div>
 
-<p className="text-3xl font-bold mb-4">R$ 29,90/mês</p>
+      </div>
 
-<ul className="mb-6 space-y-2">
-<li>✔ Vendas ilimitadas</li>
-<li>✔ Dashboard completo</li>
-<li>✔ Gráficos avançados</li>
-<li>✔ Controle total de lucro</li>
-<li>✔ Melhor decisão de preço</li>
-</ul>
+      {/* 🔒 CONFIANÇA */}
+      <p className="absolute bottom-6 text-xs text-gray-400">
+        🔒 Pagamento seguro via Mercado Pago
+      </p>
 
-<button
-onClick={()=>handleBuy('pro')}
-className="w-full bg-black text-white p-3 rounded font-bold"
->
-Começar agora
-</button>
-
-</div>
-
-{/* PREMIUM */}
-<div className="bg-white p-6 rounded shadow">
-
-<h2 className="text-xl font-bold mb-4">Plano Premium</h2>
-
-<p className="text-3xl font-bold mb-4">R$ 59,90/mês</p>
-
-<ul className="mb-6 space-y-2">
-<li>✔ Tudo do PRO</li>
-<li>✔ Multi lojas</li>
-<li>✔ Relatórios avançados</li>
-<li>✔ Prioridade suporte</li>
-</ul>
-
-<button
-onClick={()=>handleBuy('premium')}
-className="w-full bg-blue-600 text-white p-2 rounded"
->
-Quero escalar
-</button>
-
-</div>
-
-</div>
-
-<p className="text-center text-green-600 font-semibold mt-10">
-✝️ DEUS SEJA LOUVADO PARA TODO SEMPRE ✝️
-</p>
-
-</div>
-
-)
-
+    </div>
+  )
 }

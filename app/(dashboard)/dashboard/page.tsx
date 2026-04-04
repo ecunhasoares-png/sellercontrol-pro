@@ -26,6 +26,9 @@ export default function DashboardPage(){
   const [insight, setInsight] = useState('')
   const [currentVerse, setCurrentVerse] = useState('')
 
+  const FREE_LIMIT = 10
+  const remaining = FREE_LIMIT - sales.length
+
   const [cost, setCost] = useState('')
   const [margin, setMargin] = useState('30')
   const [bestMarketplace, setBestMarketplace] = useState<any>(null)
@@ -70,7 +73,6 @@ export default function DashboardPage(){
       .limit(50)
 
     if(data){
-
       setSales(data)
 
       const formatted = data.map((item) => ({
@@ -147,23 +149,32 @@ export default function DashboardPage(){
           Olá {userName}, seja bem-vindo 👋
         </h1>
 
-        {/* 🚀 BANNER DE CONVERSÃO */}
+        {/* 🚀 BANNER PRINCIPAL (CONVERSÃO) */}
         {!isPro && (
-          <div className="bg-yellow-100 p-4 rounded mb-6 flex items-center justify-between">
+          <div className="bg-yellow-100 p-4 rounded mb-2">
 
-            <div>
-              <p className="font-bold">
-                Plano FREE: até 10 vendas
-              </p>
+            <p className="font-bold">
+              🚀 {remaining > 0 
+                ? `Você ainda pode criar ${remaining} vendas`
+                : 'Você atingiu o limite do plano FREE'}
+            </p>
 
-              <p className="text-sm">
-                Desbloqueie vendas ilimitadas e aumente seu lucro 🚀
-              </p>
-            </div>
+            <p className="text-sm mb-2">
+              {remaining > 0
+                ? 'Aproveite antes que acabe...'
+                : 'Desbloqueie vendas ilimitadas agora'}
+            </p>
 
             <UpgradeButton />
 
           </div>
+        )}
+
+        {/* 🔥 PROVA SOCIAL */}
+        {!isPro && (
+          <p className="text-xs text-gray-500 mb-6">
+            🔥 Mais de 1.000 vendedores já aumentaram seus lucros com o PRO
+          </p>
         )}
 
         <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
@@ -173,12 +184,16 @@ export default function DashboardPage(){
           <p className="italic">{currentVerse}</p>
         </div>
 
-        {/* 🔥 BLOQUEIO FORTE */}
-        {!isPro && sales.length >= 10 && (
+        {/* 🚫 BLOQUEIO FINAL */}
+        {!isPro && sales.length >= FREE_LIMIT && (
           <div className="bg-red-100 text-red-700 p-4 rounded mb-6 text-center">
 
             <p className="font-bold mb-2">
-              🚫 Você atingiu o limite do plano FREE
+              🚫 Seu crescimento parou aqui
+            </p>
+
+            <p className="mb-3">
+              Faça upgrade agora para continuar vendendo
             </p>
 
             <UpgradeButton />
@@ -231,13 +246,8 @@ export default function DashboardPage(){
                 {bestMarketplace.name}
               </p>
 
-              <p>
-                Preço ideal: R$ {bestMarketplace.idealPrice.toFixed(2)}
-              </p>
-
-              <p>
-                Lucro: R$ {bestMarketplace.profit.toFixed(2)}
-              </p>
+              <p>Preço ideal: R$ {bestMarketplace.idealPrice.toFixed(2)}</p>
+              <p>Lucro: R$ {bestMarketplace.profit.toFixed(2)}</p>
 
             </div>
           )}

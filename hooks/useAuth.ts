@@ -27,9 +27,10 @@ export function useAuth(){
     }
 
     async function loadProfile(userId: string){
+
       const { data, error } = await supabase
         .from('profiles')
-        .select('is_pro')
+        .select('is_pro, trial_ends_at') // 🔥 IMPORTANTE
         .eq('id', userId)
         .maybeSingle()
 
@@ -39,7 +40,14 @@ export function useAuth(){
       }
 
       if(data){
-        setIsPro(data.is_pro)
+
+        const now = new Date()
+        const isTrialActive =
+          data.trial_ends_at &&
+          new Date(data.trial_ends_at) > now
+
+        // 🔥 REGRA FINAL
+        setIsPro(data.is_pro || isTrialActive)
       }
     }
 
