@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabaseAdmin'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY! // 🔥 IMPORTANTE
+)
 
 export async function POST(req: Request){
 
@@ -7,53 +12,44 @@ export async function POST(req: Request){
 
     const body = await req.json()
 
-    if(body.type !== 'payment'){
-      return NextResponse.json({ ok: true })
-    }
+    if(body.type === 'payment'){
 
-    const paymentId = body.data.id
+      const paymentId = body.data.id
 
-    const payment = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-      headers: {
-        Authorization: `Bearer ${process.env.MERCADO_PAGO_ACCESS_TOKEN}`
-      }
-    })
+      const payment = await fetch(
+        `https://api.mercadopago.com/v1/payments/${paymentId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.MERCADO_PAGO_ACCESS_TOKEN}`
+          }
+        }
+      )
 
-    const paymentData = await payment.json()
+      const paymentData = await payment.json()
 
-    if(paymentData.status === 'approved'){
+      if(paymentData.status === 'approved'){
 
-      const userId = paymentData.metadata?.user_id
+        const userId = paymentData.metadata.user_id
 
-      if(!userId){
-        console.error('user_id não encontrado')
-        return NextResponse.json({ ok: true })
-      }
+        await supabase
+          .from('profiles')
+          .update({ is_pro: true })
+          .eq('id', userId)
 
-      // 🔥 evita atualizar várias vezes
-      const { data: profile } = await supabaseAdmin
-        .from('profiles')
-        .select('is_pro')
-        .eq('id', userId)
-        .single()
-
-      if(profile?.is_pro){
-        return NextResponse.json({ ok: true })
       }
 
-      await supabaseAdmin
-        .from('profiles')
-        .update({ is_pro: true })
-        .eq('id', userId)
-
-      console.log('Usuário virou PRO:', userId)
     }
 
     return NextResponse.json({ ok: true })
 
   } catch (error) {
+
     console.error(error)
-    return NextResponse.json({ error: 'Erro webhook' }, { status: 500 })
+
+    return NextResponse.json(
+      { error: 'Erro webhook' },
+      { status: 500 }
+    )
   }
 
 }
