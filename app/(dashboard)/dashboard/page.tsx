@@ -14,6 +14,7 @@ import ProtectedRoute from '@/components/ProtectedRoute'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import UpgradeButton from '@/components/UpgradeButton'
 
 export default function DashboardPage(){
 
@@ -31,7 +32,6 @@ export default function DashboardPage(){
 
   const userName = user?.email?.split('@')[0] || 'Usuário'
 
-  // 📖 VERSÍCULOS
   const verses = [
     "Buscai ao Senhor enquanto se pode achar — Isaías 55:6",
     "O Senhor é meu pastor — Salmos 23:1",
@@ -42,49 +42,32 @@ export default function DashboardPage(){
     "Se Deus é por nós — Romanos 8:31"
   ]
 
-  // 🧠 TAXAS
   const marketplaces: any = {
     Shopee: 14,
     'Mercado Livre': 16,
     Amazon: 15
   }
 
-  // 🔥 VERSÍCULO AUTOMÁTICO
   useEffect(() => {
-    function updateVerse() {
-      const hour = new Date().getHours()
-      const index = hour % verses.length
-      setCurrentVerse(verses[index])
-    }
-
-    updateVerse()
-    const interval = setInterval(updateVerse, 1000 * 60 * 60)
-
-    return () => clearInterval(interval)
+    const hour = new Date().getHours()
+    const index = hour % verses.length
+    setCurrentVerse(verses[index])
   }, [])
 
-  // 🔥 BUSCAR DADOS OTIMIZADO
   useEffect(() => {
-
-    if(!user) return
-
-    loadData()
-
+    if(user){
+      loadData()
+    }
   }, [user])
 
   async function loadData(){
 
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('sales')
       .select('amount, profit, created_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(50)
-
-    if(error){
-      console.log(error.message)
-      return
-    }
 
     if(data){
 
@@ -96,12 +79,10 @@ export default function DashboardPage(){
       }))
 
       setChartData(formatted)
-
       generateInsight(data)
     }
   }
 
-  // 🧠 IA ANÁLISE
   function generateInsight(data: any[]){
 
     if(data.length === 0){
@@ -127,7 +108,6 @@ export default function DashboardPage(){
     }
   }
 
-  // 🧠 IA PREÇO
   const costValue = Number(cost)
   const marginPercent = Number(margin)
 
@@ -154,25 +134,8 @@ export default function DashboardPage(){
     router.push('/login')
   }
 
-  async function handleUpgrade(){
-
-    const res = await fetch('/api/create-payment', {
-      method: 'POST'
-    })
-
-    const data = await res.json()
-
-    if(data.init_point){
-      window.location.href = data.init_point
-    }
-  }
-
   if (loading) {
-    return (
-      <div className="p-10">
-        <p>Carregando seu dashboard...</p>
-      </div>
-    )
+    return <p className="p-10">Carregando seu dashboard...</p>
   }
 
   return(
@@ -184,24 +147,42 @@ export default function DashboardPage(){
           Olá {userName}, seja bem-vindo 👋
         </h1>
 
-        <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg">
+        {/* 🚀 BANNER DE CONVERSÃO */}
+        {!isPro && (
+          <div className="bg-yellow-100 p-4 rounded mb-6 flex items-center justify-between">
+
+            <div>
+              <p className="font-bold">
+                Plano FREE: até 10 vendas
+              </p>
+
+              <p className="text-sm">
+                Desbloqueie vendas ilimitadas e aumente seu lucro 🚀
+              </p>
+            </div>
+
+            <UpgradeButton />
+
+          </div>
+        )}
+
+        <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
           <p className="text-sm opacity-80 mb-1">
             Palavra do momento ✨
           </p>
-          <p className="italic font-medium">
-            {currentVerse}
-          </p>
+          <p className="italic">{currentVerse}</p>
         </div>
 
-        {!isPro && sales.length >= 3 && (
-          <div className="bg-red-100 text-red-700 p-4 rounded mb-6">
-            ⚠️ Limite FREE atingido (3 vendas)
-            <button
-              onClick={handleUpgrade}
-              className="ml-4 bg-green-600 text-white px-3 py-1 rounded"
-            >
-              Virar PRO
-            </button>
+        {/* 🔥 BLOQUEIO FORTE */}
+        {!isPro && sales.length >= 10 && (
+          <div className="bg-red-100 text-red-700 p-4 rounded mb-6 text-center">
+
+            <p className="font-bold mb-2">
+              🚫 Você atingiu o limite do plano FREE
+            </p>
+
+            <UpgradeButton />
+
           </div>
         )}
 
@@ -223,9 +204,7 @@ export default function DashboardPage(){
 
         <div className="bg-white p-6 rounded-xl shadow mt-6 max-w-md">
 
-          <h2 className="font-bold mb-4">
-            IA de Preço
-          </h2>
+          <h2 className="font-bold mb-4">IA de Preço</h2>
 
           <input
             type="number"
@@ -246,9 +225,7 @@ export default function DashboardPage(){
           {cost && bestMarketplace && (
             <div className="mt-4 bg-green-100 p-3 rounded">
 
-              <p className="font-bold">
-                Melhor plataforma:
-              </p>
+              <p className="font-bold">Melhor plataforma:</p>
 
               <p className="text-green-700 text-lg font-bold">
                 {bestMarketplace.name}
