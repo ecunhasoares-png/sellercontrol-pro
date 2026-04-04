@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 
 export default function NewSalePage() {
 
-  const { user } = useAuth()
+  const { user, isPro } = useAuth()
   const router = useRouter()
 
   const [products, setProducts] = useState<any[]>([])
@@ -16,7 +16,6 @@ export default function NewSalePage() {
   const [amount, setAmount] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // 🔥 carregar produtos SOMENTE do usuário
   useEffect(() => {
     if(user){
       loadProducts()
@@ -29,69 +28,59 @@ export default function NewSalePage() {
       .select('*')
       .eq('user_id', user?.id)
 
-    if (data) {
-      setProducts(data)
-    }
+    if (data) setProducts(data)
   }
 
-  // 🔥 selecionar produto
   function handleSelectProduct(id: string) {
     const product = products.find(p => p.id === id)
     setSelectedProduct(product)
   }
 
-  // 🔥 criar venda com IA financeira
   async function handleCreateSale(e: any) {
     e.preventDefault()
 
     if (!amount) return alert('Informe o valor da venda')
     if (!selectedProduct) return alert('Selecione um produto')
 
+    // 🔥 UX bloqueio (não segurança)
+    if(!isPro){
+      alert('Plano FREE permite até 10 vendas. Faça upgrade 🚀')
+    }
+
     const saleValue = Number(amount)
     const cost = Number(selectedProduct.cost)
-
-    // ⚠️ taxa vem em % (ex: 0.14 = 14%)
     const feeValue = saleValue * Number(selectedProduct.fee)
-
     const profit = saleValue - cost - feeValue
-
-    // 🔥 BLOQUEIO FREE (máx 3 vendas)
-    const { count } = await supabase
-      .from('sales')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user?.id)
-
-    if (count && count >= 3) {
-      alert('🚀 Você atingiu o limite FREE. Faça upgrade para continuar.')
-      router.push('/pricing')
-      return
-    }
 
     setLoading(true)
 
-    const { error } = await supabase.from('sales').insert([
-      {
-        amount: saleValue,
-        cost_price: cost,
-        fee: feeValue,
-        profit: profit,
-        platform: selectedProduct.platform,
-        product_id: selectedProduct.id,
-        user_id: user?.id,
-      },
-    ])
+    const res = await fetch('/api/sales', {
+      method: 'POST',
+      body: JSON.stringify({
+        userId: user?.id,
+        sale: {
+          amount: saleValue,
+          cost_price: cost,
+          fee: feeValue,
+          profit: profit,
+          platform: selectedProduct.platform,
+          product_id: selectedProduct.id,
+        }
+      })
+    })
+
+    const data = await res.json()
 
     setLoading(false)
 
-    if (error) {
-      alert(error.message)
+    if(data.error){
+      alert(data.error)
       return
     }
 
     router.push('/dashboard/sales')
   }
 
-  // 🧠 cálculo inteligente (preview)
   const calculatedFee =
     selectedProduct && amount
       ? Number(amount) * Number(selectedProduct.fee)
@@ -116,7 +105,6 @@ export default function NewSalePage() {
           Nova Venda
         </h1>
 
-        {/* 🔥 selecionar produto */}
         <select
           className="w-full border p-3 rounded mb-4"
           onChange={(e) => handleSelectProduct(e.target.value)}
@@ -131,7 +119,6 @@ export default function NewSalePage() {
 
         </select>
 
-        {/* valor da venda */}
         <input
           type="number"
           placeholder="Valor da venda"
@@ -140,39 +127,29 @@ export default function NewSalePage() {
           className="w-full border p-3 rounded mb-4"
         />
 
-        {/* 🔥 IA PREVIEW */}
         {selectedProduct && amount && (
           <div className="bg-gray-50 p-4 rounded mb-4 text-sm">
 
-            <p>
-              Produto: <strong>{selectedProduct.name}</strong>
-            </p>
-
+            <p>Produto: <strong>{selectedProduct.name}</strong></p>
             <p>Plataforma: {selectedProduct.platform}</p>
-
             <p>Custo: R$ {selectedProduct.cost}</p>
 
             <p>
               Taxa ({selectedProduct.fee * 100}%):
-              {' '}
-              R$ {calculatedFee.toFixed(2)}
+              {' '}R$ {calculatedFee.toFixed(2)}
             </p>
 
             <p className="mt-2 font-bold">
               Lucro:
-              <span
-                className={
-                  calculatedProfit >= 0
-                    ? ' text-green-600'
-                    : ' text-red-600'
-                }
-              >
-                {' '}
-                R$ {calculatedProfit.toFixed(2)}
+              <span className={
+                calculatedProfit >= 0
+                  ? ' text-green-600'
+                  : ' text-red-600'
+              }>
+                {' '}R$ {calculatedProfit.toFixed(2)}
               </span>
             </p>
 
-            {/* 🧠 IA ALERTA */}
             {calculatedProfit < 0 && (
               <p className="text-red-500 mt-2">
                 ⚠️ Você está tendo prejuízo nessa venda!

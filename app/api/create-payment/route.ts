@@ -24,6 +24,7 @@ export async function POST(req: Request){
         metadata: {
           user_id: userId
         },
+        notification_url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/create-payment/webhook`,
         back_urls: {
           success: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
           failure: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
